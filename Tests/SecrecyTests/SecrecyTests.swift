@@ -68,6 +68,14 @@ final class SecrecyTests: XCTestCase {
     XCTAssertEqual(secret.username, decodedSecret.username)
     XCTAssertEqual(secret.password.exposeSecret(), decodedSecret.password.exposeSecret())
   }
+
+  func testAutomaticStringConversion() {
+    let fake = FakeCredentials(username: "Test", password: Secret("password"))
+    XCTAssertEqual(
+      "FakeCredentials(username: \"Test\", password: Secret([REDACTED String]))",
+      "\(fake)"
+    )
+  }
 }
 
 private struct FakeCredentials: Codable {
