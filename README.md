@@ -12,7 +12,7 @@ For example if you are using a type to hold authentication information
 ```swift
 struct Authentication {
   var username: String
-  @var token: String
+  var token: String
 }
 ```
 
