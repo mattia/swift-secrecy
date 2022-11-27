@@ -44,7 +44,7 @@ final class SecrecyTests: XCTestCase {
     let credentials = try JSONDecoder().decode(FakeCredentials.self, from: data)
 
     XCTAssertEqual(credentials.password.debugDescription, "Secret([REDACTED String])")
-    XCTAssertEqual(credentials.password.exposeSecret(), "very_secret")
+    XCTAssertEqual(credentials.password.wrappedValue, "very_secret")
   }
 
   func testEncoding() throws {
@@ -66,14 +66,26 @@ final class SecrecyTests: XCTestCase {
     let decodedSecret = try JSONDecoder().decode(FakeCredentials.self, from: data)
 
     XCTAssertEqual(secret.username, decodedSecret.username)
-    XCTAssertEqual(secret.password.exposeSecret(), decodedSecret.password.exposeSecret())
+    XCTAssertEqual(secret.password.wrappedValue, decodedSecret.password.wrappedValue)
   }
 
   func testAutomaticStringConversion() {
-    let fake = FakeCredentials(username: "Test", password: Secret("password"))
+    let fake = FakeCredentials(username: "Test", password: "password")
     XCTAssertEqual(
       "FakeCredentials(username: \"Test\", password: Secret([REDACTED String]))",
       "\(fake)"
+    )
+  }
+
+  func testPropertyWrapper() {
+    let propertyWrapperContainer = PropertyWrapperTest(
+      username: "Test",
+      password: "password"
+    )
+
+    XCTAssertEqual(
+      "PropertyWrapperTest(username: \"Test\", _password: Secret([REDACTED String]))",
+      "\(propertyWrapperContainer)"
     )
   }
 }
@@ -81,4 +93,9 @@ final class SecrecyTests: XCTestCase {
 private struct FakeCredentials: Codable {
   var username: String
   var password: Secret<String>
+}
+
+private struct PropertyWrapperTest {
+  var username: String
+  @Secret var password: String
 }
