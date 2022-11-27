@@ -88,6 +88,13 @@ final class SecrecyTests: XCTestCase {
       "\(propertyWrapperContainer)"
     )
   }
+
+  func testExpressibleByLiteral() {
+    XCTAssertEqual(("password" as Secret<String>).debugDescription, "Secret([REDACTED String])")
+    XCTAssertEqual((10 as Secret<Int>).debugDescription, "Secret([REDACTED Int])")
+    XCTAssertEqual((10.0 as Secret<Double>).debugDescription, "Secret([REDACTED Double])")
+    XCTAssertEqual((true as Secret<Bool>).debugDescription, "Secret([REDACTED Bool])")
+  }
 }
 
 private struct FakeCredentials: Codable {
