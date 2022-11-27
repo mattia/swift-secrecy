@@ -14,6 +14,6 @@ extension Secret: Decodable where Wrapped: Decodable {
 extension Secret: Encodable where Wrapped: Encodable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.singleValueContainer()
-    try container.encode(exposeSecret())
+    try container.encode(wrappedValue)
   }
 }
