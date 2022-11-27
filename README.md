@@ -12,7 +12,7 @@ For example if you are using a type to hold authentication information
 ```swift
 struct Authentication {
   var username: String
-  var token: String
+  @var token: String
 }
 ```
 
@@ -34,14 +34,14 @@ Instead by using `Secret` you can avoid this mistakes. By changing the type defi
 ```swift
 struct Authentication {
   var username: String
-  var token: Secret<String>
+  @Secret var token: String
 }
 ```
 
 The same type of code
 
 ```swift
-let auth = Authentication(username: "fake", password: Secret("abc123"))
+let auth = Authentication(username: "fake", password: "abc123")
 print(auth)
 ```
 
@@ -53,10 +53,10 @@ Authentication(username: "fake", password: Secret([REDACTED String]))
 
 Protecting you from accidental mistakes.
 
-If you want to access the underlying value, you can do it by using the `exposeSecret` method
+If you want to access the underlying value, you can do it by using the `wrappedValue` property
 
 ```swift
-auth.token.exposeSecret() // This will expose the underlying `String` 
+auth.token.wrappedValue // This will expose the underlying `String` 
 ```
 
 ## Codable support
