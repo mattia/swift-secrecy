@@ -94,6 +94,14 @@ final class SecrecyTests: XCTestCase {
     XCTAssertEqual((10 as Secret<Int>).debugDescription, "Secret([REDACTED Int])")
     XCTAssertEqual((10.0 as Secret<Double>).debugDescription, "Secret([REDACTED Double])")
     XCTAssertEqual((true as Secret<Bool>).debugDescription, "Secret([REDACTED Bool])")
+    XCTAssertEqual(
+      (["password", "token"] as Secret<[String]>).debugDescription,
+    "Secret([REDACTED Array<String>])"
+    )
+    XCTAssertEqual(
+      (["username": 1, "password": 2] as Secret<[String: Int]>).debugDescription,
+      "Secret([REDACTED Dictionary<String, Int>])"
+    )
   }
 }
 
