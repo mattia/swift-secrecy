@@ -1,5 +1,9 @@
 # Secrecy
 
+[![CI](https://github.com/mattia/swift-secrecy/actions/workflows/ci.yml/badge.svg)](https://github.com/mattia/swift-secrecy/actions/workflows/ci.yml)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmattia%2Fswift-secrecy%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/mattia/swift-secrecy)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmattia%2Fswift-secrecy%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/mattia/swift-secrecy)
+
 `swift-secrecy` is a simple type wrapper to help you avoid accidentally exposing secrets.
 This package is heavily inspired by the [`secrecy` Rust crate][rust-secrecy]
 
