@@ -1,7 +1,20 @@
 import XCTest
-@testable import Secrecy
+import Secrecy
 
 final class SecrecyTests: XCTestCase {
+  func testReadME() {
+    struct Authentication {
+      var username: String
+      @Secret var password: String
+    }
+
+    let container = Authentication(username: "fake", password: "abc123")
+    XCTAssertEqual(
+      "\(container)",
+      "Authentication(username: \"fake\", _password: Secret([REDACTED String]))"
+    )
+  }
+
   func testCustomStringConvertible() {
     let wrappedBool = true
     let wrappedString = "super_secret"
@@ -44,7 +57,7 @@ final class SecrecyTests: XCTestCase {
     let credentials = try JSONDecoder().decode(FakeCredentials.self, from: data)
 
     XCTAssertEqual(credentials.password.debugDescription, "Secret([REDACTED String])")
-    XCTAssertEqual(credentials.password.wrappedValue, "very_secret")
+    XCTAssertEqual(credentials.password.projectedValue.value, "very_secret")
   }
 
   func testEncoding() throws {
@@ -66,7 +79,10 @@ final class SecrecyTests: XCTestCase {
     let decodedSecret = try JSONDecoder().decode(FakeCredentials.self, from: data)
 
     XCTAssertEqual(secret.username, decodedSecret.username)
-    XCTAssertEqual(secret.password.wrappedValue, decodedSecret.password.wrappedValue)
+    XCTAssertEqual(
+      secret.password.projectedValue.value,
+      decodedSecret.password.projectedValue.value
+    )
   }
 
   func testAutomaticStringConversion() {
@@ -94,20 +110,59 @@ final class SecrecyTests: XCTestCase {
     XCTAssertEqual((10 as Secret<Int>).debugDescription, "Secret([REDACTED Int])")
     XCTAssertEqual((10.0 as Secret<Double>).debugDescription, "Secret([REDACTED Double])")
     XCTAssertEqual((true as Secret<Bool>).debugDescription, "Secret([REDACTED Bool])")
+
+    struct ArrayLiteraWrapper: CustomDebugStringConvertible {
+      @Secret var value: [String]
+
+      var debugDescription: String { _value.debugDescription }
+    }
     XCTAssertEqual(
-      (["password", "token"] as Secret<[String]>).debugDescription,
+      ArrayLiteraWrapper(value: ["password", "token"]).debugDescription,
     "Secret([REDACTED Array<String>])"
     )
+    struct DictionaryLiteraWrapper: CustomDebugStringConvertible {
+      @Secret var value: [String: Int]
+
+      var debugDescription: String { _value.debugDescription }
+    }
     XCTAssertEqual(
-      (["username": 1, "password": 2] as Secret<[String: Int]>).debugDescription,
+      DictionaryLiteraWrapper(value: ["username": 1, "password": 2]).debugDescription,
       "Secret([REDACTED Dictionary<String, Int>])"
     )
+  }
+
+  func testValueIsNotExposed() {
+    let container = PropertyWrapperTest(username: "username", password: "password")
+    XCTAssertFalse(container.password.contains("password"))
+    XCTAssertEqual(container.$password.value, "password")
+  }
+
+  func testCustomDebugRedactorIsUsed() {
+    struct CustomRedactorWrapped {
+      @Secret var password: String
+    }
+
+    let custom = Secret(
+      "very_secret",
+      redactor: Redactor(
+        redact: { _ in "************" },
+        redactForDescription: { _ in "*" },
+        redactForDebug: { _ in "_" }
+      )
+    )
+
+    XCTAssertEqual(custom.description, "*")
+    XCTAssertEqual(custom.debugDescription, "_")
+    XCTAssertEqual(custom.projectedValue.value, "very_secret")
   }
 }
 
 private struct FakeCredentials: Codable {
   var username: String
   var password: Secret<String>
+}
+extension String: RedactableForDecodable {
+  public static var redactor: Redactor<Self> { .default }
 }
 
 private struct PropertyWrapperTest {
