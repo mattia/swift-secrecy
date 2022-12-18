@@ -38,7 +38,7 @@ Instead by using `Secret` you can avoid this mistakes. By changing the type defi
 ```swift
 struct Authentication {
   var username: String
-  @Secret var token: String
+  @Secret var password: String
 }
 ```
 
@@ -52,7 +52,7 @@ print(auth)
 Will result in this log
 
 ```
-Authentication(username: "fake", password: Secret([REDACTED String]))
+Authentication(username: "fake", _password: Secret([REDACTED String]))
 ```
 
 Protecting you from accidental mistakes.
@@ -65,9 +65,17 @@ auth.token.wrappedValue // This will expose the underlying `String`
 
 ## Codable support
 
-Support for `Codable` is available if the wrapped type is already `Codable`. Note that this does not guarantee that the secret is not exposed (for example by encoding it to the disk in plain text) but you can always create a custom type with a dedicated `Codable` conformance.
+Support for `Encodable` is provided by the package out of the box.
+To have `Decodable` support you have to provide additional information on how to redact the value. You can easily add support for your type by confirming to the `RedactableForDecodable` protocol.
+For example to automatically support `Decodable` for your `Secret<String>` you can add:
 
-Note that you can also create a custom type and make it only conform to `Decodable` to avoid accidental `Encodable` conformances.
+```swift
+extension String: RedactableForDecodable {
+  public static var redactor: Redactor<Self> { .default }
+}
+```
+
+Note that this does not guarantee that the secret is not exposed (for example by encoding it to the disk in plain text) but you can always create a custom type with a dedicated `Codable` conformance.
 
 
 ## License

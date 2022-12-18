@@ -3,17 +3,55 @@
 public struct Secret<Wrapped> {
   /// The value that should be treated with care.
   private let value: Wrapped
-
-  /// The underlying secret that we are trying to keep hidden
-  public var wrappedValue: Wrapped {
-    value
-  }
+  private let redactor: Redactor<Wrapped>
 
   /// Creates a new secret by wrapping the provided value.
   ///
-  /// - Parameter value: The value to keep secret
-  public init(_ value: Wrapped) {
+  /// - Parameter wrappedValue: The value to keep secret
+  /// - Parameter redactor: The `Redactor` that masks the secret
+  ///                                       
+  public init(_ value: Wrapped, redactor: Redactor<Wrapped>) {
     self.value = value
+    self.redactor = redactor
+  }
+
+  /// The underlying secret that we are trying to keep hidden
+  public var wrappedValue: Wrapped {
+    redactor.redact(value)
+  }
+
+  public var projectedValue: UnwrappedSecret<Wrapped> {
+    UnwrappedSecret(value)
+  }
+
+  public struct UnwrappedSecret<Wrapped> {
+    public let value: Wrapped
+
+    public init(_ value: Wrapped) {
+      self.value = value
+    }
+  }
+}
+
+public extension Secret {
+  init(_ value: Wrapped) where Wrapped == String {
+    self.value = value
+    self.redactor = .default
+  }
+
+  init(_ value: Wrapped) where Wrapped == Int {
+    self.value = value
+    self.redactor = .default
+  }
+
+  init(_ value: Wrapped) where Wrapped == Double {
+    self.value = value
+    self.redactor = .default
+  }
+
+  init(_ value: Wrapped) where Wrapped == Bool {
+    self.value = value
+    self.redactor = .defaultFalse
   }
 }
 
@@ -21,7 +59,7 @@ public struct Secret<Wrapped> {
 
 extension Secret: CustomStringConvertible {
   public var description: String {
-    "************"
+    redactor.redactForDescription(value)
   }
 }
 
@@ -29,7 +67,7 @@ extension Secret: CustomStringConvertible {
 
 extension Secret: CustomDebugStringConvertible {
   public var debugDescription: String {
-    "Secret([REDACTED \(Wrapped.self)])"
+    redactor.redactForDebug(value)
   }
 }
 
